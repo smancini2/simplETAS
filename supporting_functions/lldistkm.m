@@ -1,9 +1,12 @@
+% This function was written by M Sohrabinia and is available at: 
+% https://www.mathworks.com/matlabcentral/fileexchange/38812-latlon-distance)
+
 function [d1km d2km]=lldistkm(latlon1,latlon2)
 % format: [d1km d2km]=lldistkm(latlon1,latlon2)
 % Distance:
 % d1km: distance in km based on Haversine formula
 % (Haversine: http://en.wikipedia.org/wiki/Haversine_formula)
-% d2km: distance in km based on Pythagoras’ theorem
+% d2km: distance in km based on Pythagorasâ€™ theorem
 % (see: http://en.wikipedia.org/wiki/Pythagorean_theorem)
 % After:
 % http://www.movable-type.co.uk/scripts/latlong.html
