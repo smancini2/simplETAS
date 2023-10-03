@@ -60,9 +60,6 @@ obs_raw = readmatrix(cat_dir) ;
 obs_raw(:,2) = eqlon ;
 obs_raw(:,3) = eqlat ;
 
-%obs_raw = obs_raw(1:257951,:) ; %1972-preAMA
-%obs_raw = obs_raw(90751:257951,:) ; %16Apr2005-preAMA
-
 t0 = 0 ;
 Nyears = 3 ;    % start of calculation for the likelihood (i.e., diration of learning period)
 t1 = Nyears*365 ;     % the period for the estimation is Nyears from the start of the catalog
@@ -102,12 +99,14 @@ bg_mtrx_inside = bg_mtrx(inside_bg,:) ;
 
 bvalue = 1.0 ;  % assumed b-value in GR distribution
 alpha = bvalue*log(10) ; beta = bvalue*log(10) ; 
-p = 1.15 ; c = 0.005 ; % in days 
-gamma = 1.5 ; q = 1.5 ; D = 1 ; % in km^2
+p = 1.15 ; 
+c = 0.005 ; % in days 
+gamma = 1.5 ; q = 1.5 ; 
+D = 1 ; % in km^2
 
 
 %% CALCULATING SOME QUANTITIES USED FOR THE EQUATION TO BE SOLVED TO FIND THE PARAMETERS 
-% (see eq. S.3-S.5 in the supplementary material)
+% (see equations in the supplementary material)
 
 % Calculating H
 %h = exp(alpha*(obs(:,4)-mag0)) ;    % approximation by Schoenberg (2013)
