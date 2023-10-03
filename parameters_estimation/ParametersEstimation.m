@@ -194,4 +194,3 @@ ycheck = 1:1:N_eqk_inside ;
 
 figure(1)
 plot(xcheck,ycheck) ;
-x
