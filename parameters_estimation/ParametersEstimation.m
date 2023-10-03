@@ -179,7 +179,7 @@ fun = @(x) root2D (x,mu,C,t2,t1,H,Delta,N_eqk_inside) ;
 options = optimoptions('fsolve','Algorithm','levenberg-marquardt','Display','iter') ;
 x = fsolve(fun,x0,options) ;
 
-bgd = x(1) ; % average daily backgorund seismicity rate
+bgd = x(1) ; % average daily background seismicity rate
 
 v = bgd*365.25 ;  % annual number of background events (events/year)
 A = x(2) ;        % estimated simplETAS parameter: earthquake productivity
