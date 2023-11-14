@@ -1,15 +1,28 @@
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                       %
-% THIS CODE SIMULATES A SET OF simpleETAS SYNTHETIC EARTHQUAKE CATALOGS %
-%                                                                       %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+% THIS CODE SIMULATES A SET OF simplETAS SYNTHETIC EARTHQUAKE CATALOGS %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% The learning earthquake catalog must have the following format (columns):
+% column 1: time [in days] — note: the most recent event is at t=0
+% column 2: x [in km], with respect to a reference longitude (reflon) at your choosing
+% column 3: y [in km], with respect to a reference latitude (reflat) at your choosing 
+% column 4: magnitude
+% column 5: index --> 2= background event, 1= triggered event (for convenience, initialize as =2 for all events in the learning catalog)
+% column 6: earthquake generation --> 0 for background events, then 1,2,3,... for triggered events (for convenience, initialize as =0 for all events in the learning catalog)
+% column 7: index number for each earthquake in the catalog, unique
+% column 8: index number of the parent earthquake, 0 for background events (for convenience, initialize as =0 for all events in the learning catalog)
+
+% NOTE: the output simulated catalogs will feature the same format as above
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all; clc; 
 
-%% SET PATH FOR SUPPORTING FUNCTIONS
+%% SET PATH TO THE CODE FOLDER AND SUBFOLDERS
 
-addpath('/simplETAS-main/supporting_functions') ; 
+addpath(genpath('/simplETAS-main')) ;
 
 %% SET DIRECTORIES
 
