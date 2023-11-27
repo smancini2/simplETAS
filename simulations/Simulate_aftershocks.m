@@ -65,19 +65,19 @@ while (Nnext > 0.1)
       disp('****************************************') ;
       fprintf('\n Generation: %g \n', K) ;
       
-      taft = repelem(next_gen(:,1),Naft) ;
-      index_p = repelem(next_gen(:,7),Naft) ;                           % parent of aftershock
+      taft = repelem(next_gen(:,1), Naft, 1) ;
+      index_p = repelem(next_gen(:,7), Naft, 1) ;                       % parent of aftershock
       index_nr = (max(next_gen(:,7))+1:1:max(next_gen(:,7))+Nnext)' ;   % new index for aftershock
       taft = taft + (rand(Nnext,1).^(1/(1-theta(4)))-1) * theta(2) ;    % Omori law
       maft = GRTruncSimul(theta(8),mag_large,theta(9),mbin, Nnext) ;    % truncated G-R law at mag_large
       maft = round(maft,2) ;
       %fprintf('Magnitudes: %g \n', maft) ;
       
-      dd = repelem(theta(6)*exp(theta(5)*(next_gen(:,4)-theta(9))), Naft) ;
+      dd = repelem(theta(6)*exp(theta(5)*(next_gen(:,4)-theta(9))), Naft, 1) ;
       RR = sqrt(abs(dd.*(rand(Nnext,1).^(1/(1-theta(7)))-1))) ;         % in km (TO DO: SET A DISTANCE LIMIT INSIDE TESTING POLYGON)
       angle = rand(Nnext,1)*pi*2 ;
-      xaft = repelem(next_gen(:,2), Naft) ;
-      yaft = repelem(next_gen(:,3), Naft) ;
+      xaft = repelem(next_gen(:,2), Naft, 1) ;
+      yaft = repelem(next_gen(:,3), Naft, 1) ;
       %xaft = xaft+(RR*cos(angle))* Km2Lon(yaft) ;   % lon: transform km -> degree
       %yaft = yaft+(RR*sin(angle))* Km2Lat ;         % lat: transform km -> degree
       xaft = xaft+(RR.*cos(angle)) ;                 % location x
