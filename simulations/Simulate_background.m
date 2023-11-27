@@ -49,10 +49,10 @@ xgrid = linspace(xpol_round(1),xpol_round(2),size(bg_mtrx,1))' ;
 ygrid = linspace(ypol_round(1),ypol_round(2),size(bg_mtrx,2))' ;
 
 xvec = repmat(xgrid,size(bg_mtrx,2),1) ;
-yvec = repelem(ygrid,size(bg_mtrx,1)) ;
+yvec = repelem(ygrid,size(bg_mtrx,1),1) ;
 
 %bg_tar = nm2N(bg_mtrx) ;
-bg_tar = nm2N(bg_mtrx') ; % only if line 12 is uncommented
+bg_tar = nm2N(bg_mtrx') ; % only if line 24 is uncommented
 
 % Transform rate to density
 dens_mtrx = bg_tar/sum(bg_tar) ;
