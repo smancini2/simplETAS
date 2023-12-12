@@ -1,6 +1,6 @@
 %% From Mancini and Marzocchi (2023), SRL
 
-%% Version of Aug 28, 2023
+%% Version of Dec 12, 2023
 %
 % Other papers cited in the code
 % E. Lippiello,  F. Giacco, L. de Arcangelis, W. Marzocchi, C. Godano (2014). 
@@ -23,59 +23,85 @@ close all; clear all
 
 %% SET PATH FOR SUPPORTING FUNCTIONS
 
-addpath('/simplETAS-main/supporting_functions') ; % set your full path to functions 
+addpath(genpath('/simplETAS-main')) ; % set your full path to 'simplETAS-main' folder 
 
+%% 
+ 
+% INPUT:  1) earthquake catalog in ZMAP format [obs_raw, 10 columns:]
 
-%% SET THE INPUT CATALOG AND SELECT THE EARTHQUAKES IN THE SPACE-TIME WINDOW OF INTEREST
-%  
-% INPUT: 1) earthquake catalog [obs_raw, 4 columns: 
-%                              i)   time in days since the last event in the catalog ; 
-%                              ii)  longitude in km (preferably use the same reference longitude as reflon) ; 
-%                              iii) latitude in km (preferably use the same reference latitude as reflat) ; 
-%                              iv)  magnitude]
-%        
-%        2) file of the region coordinates [forecasting_region; 2 columns:
+% column 1: longitude [deg]
+% column 2: latitude [deg]
+% column 3: year
+% column 4: month
+% column 5: day
+% column 6: magnitude
+% column 7: depth [km]
+% column 8: hour
+% column 9: minute
+% column 10: second
+
+% example: [13.2335 42.6983 2016 08 24 6.18 8.10 01 36 32]
+     
+%         2) file of the region coordinates [forecasting_region; 2 columns:
 %                                          i)  longitude in degrees ; 
 %                                          ii) latitude in degrees]
 % 
-% OUTPUT: the earthquake catalog inside the 
-%         space-time window [obs_raw_inside, 4 columns: 
-%         i)   time in days since the first event in the whole catalog; 
-%         ii)  longitude in degrees; 
-%         iii) latitude in degrees; 
-%         iv)  magnitude]
+% OUTPUT: 1) the earthquake catalog inside the 
+%            space-time window [obs_raw_inside, 4 columns: 
+%               i)   time in days since the first event in the whole catalog; 
+%               ii)  longitude in degrees; 
+%               iii) latitude in degrees; 
+%               iv)  magnitude]
+%         2) the estimated simplETAS free parameters
 
-%%
+%% SET DIRECTORIES
 
-cat_dir = '/simplETAS-main/parameters_estimation/input_examples/HORUS_1972-2021_z30_no-etna.txt' ; 
+% absolute path of the seismic catalog
+cat_dir = '/simplETAS-main/parameters_estimation/input_examples/HORUS_1972-2021_z30_no-etna_ZMAP.txt' ; 
 
+% absolute path of textfile with lon-lat vertices of authoritative region
+% (in degrees, clockwise order starting from the top-left point)
 forereg_dir = '/simplETAS-main/parameters_estimation/input_examples/Polygon_Italy_MPS19_clockwise.dat' ;
-forecasting_region = readmatrix(forereg_dir) ;   
+
+% absolute path of mu(x,y) matrix (from national seismic hazard model)
+bg_dir = '/Users/simone/Desktop/simplETAS-main/parameters_estimation/input_examples/rate_norm.txt' ; 
+
+
+%% LOAD INPUT CATALOG AND SELECT THE EARTHQUAKES IN THE SPACE-TIME WINDOW OF INTEREST
 
 reflat = 38.7328 ;   % used for to transform x-y [in km] in learning catalog
 reflon = 13.1237 ;   % used for to transform x-y [in km] in learning catalog
 
-obs_raw = readmatrix(cat_dir) ;
-[eqlat,eqlon] = merc2geo(obs_raw(:,3),obs_raw(:,2),reflon,reflat) ;
-obs_raw(:,2) = eqlon ;
-obs_raw(:,3) = eqlat ;
+forecasting_region = readmatrix(forereg_dir) ;   
 
-t0 = 0 ;
-Nyears = 3 ;    % start of calculation for the likelihood (i.e., diration of learning period)
-t1 = Nyears*365 ;     % the period for the estimation is Nyears from the start of the catalog
-t2 = -obs_raw(1,1) ;   % last event, end of the catalog
+obs_raw_ZMAP = readmatrix(cat_dir) ;
+obsdim = size(obs_raw_ZMAP) ;
+last_event = obs_raw_ZMAP(end,[3 4 5 8 9 10]) ;
+
+for n = 1:obsdim(1)
+    obs_raw(n,1) = [etime([obs_raw_ZMAP(n,[3 4 5 8 9 10])],last_event)]/(24*60*60) ; %y mon day hr min sec
+end
+obs_raw(:,2) = obs_raw_ZMAP(:,1) ;
+obs_raw(:,3) = obs_raw_ZMAP(:,2) ;
+obs_raw(:,4) = obs_raw_ZMAP(:,6) ;
+clear obs_raw_ZMAP n
+
+%t0 = 0 ;
+Nyears = 3 ;           % start of calculation for the likelihood (i.e., diration of learning period)
+t1 = Nyears*365 ;      % the period for the estimation starts Nyears after the start of the catalog
+t2 = -obs_raw(1,1) ;   % end of estimation period
 
 inside_raw = inpolygon(obs_raw(:,2),obs_raw(:,3),forecasting_region(:,1),forecasting_region(:,2)) ; % Determining the earthquakes of the catalog inside the forecasting region
 obs_raw_inside1 = obs_raw((inside_raw),:) ;    % inside the spatial region
 obs_raw_inside = obs_raw_inside1(find((obs_raw_inside1(:,1)-obs_raw(1,1))>t1),:) ;      % inside the temporal window
 
-%% SET MINIMUM MAGNITUDE mag0 AND TRIM THE CATALOG ACCORDINGLY 
+%% SET MINIMUM MAGNITUDE mag0 AND CUT THE CATALOG ACCORDINGLY 
 
 mag0 = 3.95 ;   % minimum triggering magnitude
 obs = (obs_raw(obs_raw(:,4) >= mag0,:)) ; % cut the catalog according to mag0
 
 time = obs(:,1)-obs_raw(1,1) ;
-obs_inside = (obs_raw_inside(obs_raw_inside(:,4) >= mag0,:)) ; % cut the catalog according to mag0:
+obs_inside = (obs_raw_inside(obs_raw_inside(:,4) >= mag0,:)) ; % cut the inside catalog according to mag0:
 time_inside = obs_inside(:,1)-obs_raw(1,1) ;
 
 N_eqk = length(obs) ;
@@ -83,13 +109,12 @@ N_eqk_inside = length(obs_inside) ;
 
 clear obs_raw obs_raw_inside1 obs_raw_inside ;
 
-%%
+
 %% SET THE BACKGROUND (from national seismic hazard model)
 %  OUTPUT: bg_mtrx_inside, that is the background (bg_mtrx) inside the space-time window. 3 columns: i) longitude, ii) latitude; iii) normalized spatial probability
 
 %  It may be very similar to the input background bg_mtrx if the latter is calculated and normalized on the same space window
 
-bg_dir = '/simplETAS-main/parameters_estimation/input_examples/rate_norm.txt' ; 
 bg_mtrx = readmatrix(bg_dir) ;
 inside_bg = inpolygon(bg_mtrx(:,1),bg_mtrx(:,2),forecasting_region(:,1),forecasting_region(:,2)) ;
 bg_mtrx_inside = bg_mtrx(inside_bg,:) ;
