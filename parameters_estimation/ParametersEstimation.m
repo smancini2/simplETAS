@@ -1,6 +1,6 @@
 %% From Mancini and Marzocchi (2023), SRL
 
-%% Version of Dec 12, 2023
+%% Version of Jan 13, 2024
 %
 % Other papers cited in the code
 % E. Lippiello,  F. Giacco, L. de Arcangelis, W. Marzocchi, C. Godano (2014). 
@@ -209,13 +209,55 @@ v = bgd*365.25 ;  % annual number of background events (events/year)
 A = x(2) ;        % estimated simplETAS parameter: earthquake productivity
 
 
-%%
+%% FINAL CHECKS
 
-% The following is a useful test to check if the obtained background (v) is reasonable. 
-% It should be roughly comparable to the minimum slope of this curve in some temporal subsets
+% CHECK 1 - The following is a useful test to check if the obtained average daily backgorund seismicity rate is reasonable. 
+% It should be roughly comparable to the minimum slope of this curve in some temporal subsets.
 
 xcheck = time_inside ;
 ycheck = 1:1:N_eqk_inside ;
 
 figure(1)
 plot(xcheck,ycheck) ;
+xlabel('Time','FontSize',12) ;
+ylabel('Cumulative # eqks','FontSize',12) ;
+
+
+% CHECK 2 - Transformed times to check the linearity of the residuals with slope=1. See Ogata 1988.
+
+for j = 1:N_eqk_inside
+    cdum = 0;
+    [ykm_j xkm_j] = geo2merc(obs_inside(j,3),obs_inside(j,2),reflon,reflat) ;
+
+    for i=1:N_eqk
+        if time (i) < time_inside(j) 
+           [ykm_i xkm_i] = geo2merc(obs(i,3),obs(i,2),reflon,reflat) ;
+           p1 = A*exp(alpha*(obs(i,4)-mag0)) ;
+           % p2 is the time integtral of the Omori (see approximation in equation S.3 in simplETAS paper) 
+           p2 = (1-((time_inside(j)-time(i))/c+1)^(1-p)) ;
+           cdum = cdum + p1*p2 ; 
+        end
+    end
+
+% rate_estimated(j)=(cdum+v*mu(j))*beta*exp(-beta*(obs_inside(j,4)-mag0));
+
+    time_transformed(j) = cdum+(v/365.25)*time_inside(j) ;
+end
+
+time_t = sort(time_transformed) ;
+ncum = [1:1:N_eqk_inside] ;
+
+figure(2)
+
+plot (time_t-time_t(1),ncum) ;
+xlabel('Transformed time') ;
+ylabel('Cumulative # eqks') ;
+
+hold on ;
+
+xd1 = [0 N_eqk_inside] ;
+yd1 = [0 N_eqk_inside] ;
+
+plot(xd1,yd1) ;
+xlabel('Transformed time','FontSize',12) ;
+ylabel('Cumulative # eqks','FontSize',12) ;
